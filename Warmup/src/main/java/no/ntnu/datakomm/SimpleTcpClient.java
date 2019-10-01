@@ -1,13 +1,20 @@
 package no.ntnu.datakomm;
 
+import java.io.*;
+import java.net.Socket;
+import java.net.SocketException;
+import java.security.PublicKey;
+
 /**
  * A Simple TCP client, used as a warm-up exercise for assignment A4.
  */
 public class SimpleTcpClient {
     // Remote host where the server will be running
-    private static final String HOST = "localhost";
+    private static final String HOST = "datakomm.work"; // datakomm.work
     // TCP port
     private static final int PORT = 1301;
+
+    public Socket socket;
 
     /**
      * Run the TCP Client.
@@ -89,20 +96,43 @@ public class SimpleTcpClient {
      * @return True on success, false otherwise
      */
     private boolean closeConnection() {
-        return false;
+
+        try {
+            socket.close();
+            return true;
+        } catch (IOException e) {
+            e.printStackTrace();
+            return false;
+        }
+
     }
 
     /**
      * Try to establish TCP connection to the server (the three-way handshake).
      *
      * @param host The remote host to connect to. Can be domain (localhost, ntnu.no, etc), or IP address
-     * @param port TCP port to use
+     * datakomm.work
+     * @param port TCP port to use (1301)
      * @return True when connection established, false otherwise
      */
     private boolean connectToServer(String host, int port) {
+
+        try {
+            socket = new Socket(host, port);
+            System.out.println("Successfully connected!");
+
+            return true;
+
+        } catch (IOException e) {
+            System.out.println("ERROR: "+ e.getMessage());
+            return false;
+        }
+
+
+
+
         // TODO - implement this method
         // Remember to catch all possible exceptions that the Socket class can throw.
-        return false;
     }
 
     /**
@@ -113,12 +143,23 @@ public class SimpleTcpClient {
      */
     private boolean sendRequestToServer(String request) {
         // TODO - implement this method
+
+
+        try {
+            PrintWriter outToServer = new PrintWriter(socket.getOutputStream(), true);
+            outToServer.println(request);
+            return true;
+        } catch (IOException | NullPointerException e) {
+            System.out.println(e.getMessage());
+            return false;
+        }
+
         // Hint: What can go wrong? Several things:
         // * Connection closed by remote host (server shutdown)
         // * Internet connection lost, timeout in transmission
         // * Connection not opened.
         // * What is the request is null or empty?
-        return false;
+
     }
 
     /**
@@ -129,8 +170,19 @@ public class SimpleTcpClient {
      */
     private String readResponseFromServer() {
         // TODO - implement this method
+
+        try {
+            BufferedReader inFromServer = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+            String answer = inFromServer.readLine();
+            System.out.println(answer);
+            return answer;
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
+
+
         // Similarly to other methods, exception can happen while trying to read the input stream of the TCP Socket
-        return null;
     }
 
     /**
