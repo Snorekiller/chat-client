@@ -27,10 +27,14 @@ public class TCPClient {
 
 
         try {
+            //Opens new socket
             connection = new Socket(host, port);
             System.out.println("Successfully connected!");
 
+            //Opens an output stream to the server
             toServer = new PrintWriter(connection.getOutputStream(), true);
+
+            //Opens an "input stream" from the server
             fromServer = new BufferedReader(new InputStreamReader(connection.getInputStream()));
             return true;
 
@@ -73,8 +77,18 @@ public class TCPClient {
      */
     private boolean sendCommand(String cmd) {
         // TODO Step 2: Implement this method
+
+        // Checks if socket is open and prints the command to the server if it is
+        if(connection.isConnected()) {
+            toServer.print(cmd);
+            return true;
+        }
+        else {
+            System.out.println("Socket is closed");
+            return false;
+        }
+
         // Hint: Remember to check if connection is active
-        return false;
     }
 
     /**
@@ -85,9 +99,21 @@ public class TCPClient {
      */
     public boolean sendPublicMessage(String message) {
         // TODO Step 2: implement this method
+
+        // Calls on "sendCommand to send "msg " command, and sends the message after
+        if (sendCommand("msg ")) {
+            toServer.println(message);
+            System.out.println("Message sent successfully!");
+            return true;
+        }
+        else {
+            System.out.println("Message not sent");
+            return false;
+        }
+
         // Hint: Reuse sendCommand() method
         // Hint: update lastError if you want to store the reason for the error.
-        return false;
+
     }
 
     /**
