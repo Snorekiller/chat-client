@@ -239,6 +239,10 @@ public class TCPClient {
                     onLoginResult(false, "Username already in use");
                     System.out.println("Username already in use");
                     break;
+                case "loginerr incorrect username format":
+                    onLoginResult(false, "No special symbols (includes space)");
+                    System.out.println("Username must not contain special symbols");
+                    break;
                 case "error":
                     onLoginResult(false, "Timed out");
                     System.out.println("Did not recieve an answer from server during login");
