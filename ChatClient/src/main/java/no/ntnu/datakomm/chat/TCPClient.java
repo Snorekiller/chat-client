@@ -79,7 +79,7 @@ public class TCPClient {
         // TODO Step 2: Implement this method
 
         // Checks if socket is open and prints the command to the server if it is
-        if(connection.isConnected()) {
+        if(isConnectionActive()) {
             toServer.print(cmd);
             return true;
         }
@@ -123,6 +123,16 @@ public class TCPClient {
      */
     public void tryLogin(String username) {
         // TODO Step 3: implement this method
+
+        //Sends a username to the server for check
+        if(sendCommand("login ")){
+            toServer.println(username);
+            System.out.println("Username sent to server");
+        }
+        else {
+            System.out.println("Username was not sent to server");
+        }
+
         // Hint: Reuse sendCommand() method
     }
 
@@ -167,10 +177,22 @@ public class TCPClient {
      */
     private String waitServerResponse() {
         // TODO Step 3: Implement this method
+
+        String answer = "error";
+
+        // Reads answer from server and returns it as a string
+        // Should it not get an answer it returns "error", which will be handled by parseIncomingCommands()
+        try {
+            answer = fromServer.readLine();
+            return answer;
+        } catch (IOException e) {
+            e.printStackTrace();
+            return answer;
+        }
+
         // TODO Step 4: If you get I/O Exception or null from the stream, it means that something has gone wrong
         // with the stream and hence the socket. Probably a good idea to close the socket in that case.
 
-        return null;
     }
 
     /**
@@ -204,6 +226,25 @@ public class TCPClient {
     private void parseIncomingCommands() {
         while (isConnectionActive()) {
             // TODO Step 3: Implement this method
+
+            //Switch case calls on method to display an error message if username is already taken
+            //Or if no answer is recieved from the server after trying to log in
+            String switchString = waitServerResponse();
+            switch (switchString){
+                case "loginok":
+                    onLoginResult(true, "");
+                    System.out.println("Server responded with loginok");
+                    break;
+                case "loginerr username already in use":
+                    onLoginResult(false, "Username already in use");
+                    System.out.println("Username already in use");
+                    break;
+                case "error":
+                    onLoginResult(false, "Timed out");
+                    System.out.println("Did not recieve an answer from server during login");
+                    break;
+            }
+
             // Hint: Reuse waitServerResponse() method
             // Hint: Have a switch-case (or other way) to check what type of response is received from the server
             // and act on it.
