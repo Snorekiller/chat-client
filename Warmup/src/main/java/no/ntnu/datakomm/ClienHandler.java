@@ -8,6 +8,7 @@ import java.net.Socket;
 
 public class ClienHandler extends Thread {
     private final Socket clientSocket;
+    private String response;
 
     public ClienHandler(Socket clientSocket) {
         this.clientSocket = clientSocket;
@@ -16,34 +17,28 @@ public class ClienHandler extends Thread {
     @Override
     public void run() {
 
-        InputStreamReader reader = null;
+        InputStreamReader reader;
         try {
-          do {
-              reader = new InputStreamReader(clientSocket.getInputStream());
+                do {
+                    reader = new InputStreamReader(clientSocket.getInputStream());
 
 
-            BufferedReader bufReader = new BufferedReader(reader);
+                    BufferedReader bufReader = new BufferedReader(reader);
 
-            String clientInput = bufReader.readLine();
-            if (clientInput == "game over") {
-                clientSocket.close();
-            }
-            System.out.println("Client sent: " + clientInput);
-            String[] parts = clientInput.split(" ");
+                    String clientInput = bufReader.readLine();
+                    System.out.println("Client sent: " + clientInput);
+                    String[] parts = clientInput.split(" ");
 
+                    if (parts.length == 2) {
+                        response = parts[0] + " " + parts[1].toUpperCase();
+                    } else {
+                        response = "error";
+                    }
 
-            String response;
-
-            if (parts.length == 2) {
-                response = parts[0] + " " + parts[1].toUpperCase();
-            } else {
-                response = "error";
-            }
-
-            PrintWriter writer = new PrintWriter(clientSocket.getOutputStream(), true);
-            writer.println(response);
-          } while (clientSocket.isConnected());
-
+                    PrintWriter writer = new PrintWriter(clientSocket.getOutputStream(), true);
+                    writer.println(response);
+                } while (response!="game over" || response== null);
+            clientSocket.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
