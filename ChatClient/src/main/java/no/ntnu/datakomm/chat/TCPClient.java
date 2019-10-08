@@ -28,7 +28,9 @@ public class TCPClient {
 
         try {
             //Opens new socket
+
             connection = new Socket(host, port);
+
             System.out.println("Successfully connected!");
 
             //Opens an output stream to the server
@@ -60,8 +62,23 @@ public class TCPClient {
     public synchronized void disconnect() {
         // TODO Step 4: implement this method
         // Hint: remember to check if connection is active
+
+        //checks if connection is active and closes + sets socket to null to avoid that methods tries to call on the closed socket
+        if(isConnectionActive()) {
+            try {
+                connection.close();
+                connection = null;
+
+            } catch (IOException e) {
+                //e.printStackTrace();
+                System.out.println("IOExeption in isConnectionActive method ");
+            }
+            onDisconnect();
+        }
     }
 
+
+    //Beneftits from socket being set to null on disconnect cause it will be true even if socket is closed, but not if it is null
     /**
      * @return true if the connection is active (opened), false if not.
      */
@@ -178,20 +195,25 @@ public class TCPClient {
     private String waitServerResponse() {
         // TODO Step 3: Implement this method
 
-        String answer = "error";
+            String answer = "error";
 
-        // Reads answer from server and returns it as a string
-        // Should it not get an answer it returns "error", which will be handled by parseIncomingCommands()
-        try {
-            answer = fromServer.readLine();
-            return answer;
-        } catch (IOException e) {
-            e.printStackTrace();
-            return answer;
-        }
+            // Reads answer from server and returns it as a string
+            // Should it not get an answer it returns "error", which will be handled by parseIncomingCommands()
+            try {
+                answer = fromServer.readLine();
+                return answer;
+            } catch (IOException e) {
+                System.out.println(e.getMessage());
+                //e.printStackTrace();
+                //disconnect();
+
+
+                return "";
+            }
 
         // TODO Step 4: If you get I/O Exception or null from the stream, it means that something has gone wrong
         // with the stream and hence the socket. Probably a good idea to close the socket in that case.
+        // didn't do this, let's wait for the problem to introduce itself
 
     }
 
@@ -224,6 +246,7 @@ public class TCPClient {
      * the connection is closed.
      */
     private void parseIncomingCommands() {
+        //while (!connection.isClosed()) {
         while (isConnectionActive()) {
             // TODO Step 3: Implement this method
 
@@ -243,10 +266,7 @@ public class TCPClient {
                     onLoginResult(false, "No special symbols (includes space)");
                     System.out.println("Username must not contain special symbols");
                     break;
-                case "error":
-                    onLoginResult(false, "Timed out");
-                    System.out.println("Did not recieve an answer from server during login");
-                    break;
+
             }
 
             // Hint: Reuse waitServerResponse() method
@@ -313,6 +333,11 @@ public class TCPClient {
      */
     private void onDisconnect() {
         // TODO Step 4: Implement this method
+
+        for (ChatListener l : listeners) {
+            l.onDisconnect();
+        }
+
         // Hint: all the onXXX() methods will be similar to onLoginResult()
     }
 
