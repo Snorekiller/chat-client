@@ -96,6 +96,8 @@ public class TCPClient {
         // TODO Step 2: Implement this method
 
         // Checks if socket is open and prints the command to the server if it is
+
+
         if(isConnectionActive()) {
             toServer.print(cmd);
             return true;
@@ -105,7 +107,9 @@ public class TCPClient {
             return false;
         }
 
+
         // Hint: Remember to check if connection is active
+
     }
 
     /**
@@ -159,6 +163,16 @@ public class TCPClient {
      */
     public void refreshUserList() {
         // TODO Step 5: implement this method
+
+        // Sends the command "users" to the sendCommand method
+        if(sendCommand("users")){
+            //this one is needed cause there is no println in sendCommand
+            toServer.println("");
+            System.out.println("Asked server for user list");
+        }
+
+//            toServer.println("users ");
+
         // Hint: Use Wireshark and the provided chat client reference app to find out what commands the
         // client and server exchange for user listing.
     }
@@ -252,7 +266,31 @@ public class TCPClient {
 
             //Switch case calls on method to display an error message if username is already taken
             //Or if no answer is recieved from the server after trying to log in
+
+            //Create a string from the response from server
             String switchString = waitServerResponse();
+            //String userListString = switchString;
+
+            //Create a string to split up in order to make an array
+            String stringToSplit = switchString;
+
+            //replace the first word with an empty string, this is so that "users" will not appear as a user
+            stringToSplit = stringToSplit.replaceFirst("users ", "");
+
+            //Create the array that contains all the users
+            String[] tempArray;
+
+            //Declare the symbol that means the string should be split
+            String delimiter = " ";
+
+            // given string will be split by the argument delimiter provided.
+            tempArray = stringToSplit.split(delimiter);
+
+
+
+            if (switchString.contains("users")){
+                switchString = "users ";
+            }
             switch (switchString){
                 case "loginok":
                     onLoginResult(true, "");
@@ -266,6 +304,15 @@ public class TCPClient {
                     onLoginResult(false, "No special symbols (includes space)");
                     System.out.println("Username must not contain special symbols");
                     break;
+                case  "users ":
+
+
+                    //System.out.println(userListString);
+                    onUsersList(tempArray);
+                    for (int i = 0; i < tempArray.length; i++){
+                        System.out.println(tempArray[i]);
+                    }
+
 
             }
 
@@ -348,6 +395,10 @@ public class TCPClient {
      */
     private void onUsersList(String[] users) {
         // TODO Step 5: Implement this method
+
+        for (ChatListener l : listeners){
+            l.onUserList(users);
+        }
     }
 
     /**
