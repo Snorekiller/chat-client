@@ -186,6 +186,14 @@ public class TCPClient {
      */
     public boolean sendPrivateMessage(String recipient, String message) {
         // TODO Step 6: Implement this method
+
+        //makes a string of command and the recipient, and then adds " " and message after
+        if(sendCommand("privmsg " + recipient)){
+            toServer.println(" " + message);
+            return true;
+        }
+
+        System.out.println("Could not send a PM");
         // Hint: Reuse sendCommand() method
         // Hint: update lastError if you want to store the reason for the error.
         return false;
@@ -305,8 +313,6 @@ public class TCPClient {
                     System.out.println("Username must not contain special symbols");
                     break;
                 case  "users ":
-
-
                     //System.out.println(userListString);
                     onUsersList(tempArray);
                     for (int i = 0; i < tempArray.length; i++){
