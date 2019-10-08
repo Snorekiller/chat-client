@@ -205,6 +205,10 @@ public class TCPClient {
      */
     public void askSupportedCommands() {
         // TODO Step 8: Implement this method
+        if(sendCommand("help ")){
+            toServer.println("");
+        }
+
         // Hint: Reuse sendCommand() method
     }
 
@@ -366,6 +370,10 @@ public class TCPClient {
 
                     onCmdError(response);
                     break;
+                case "supported":
+                    System.out.println("Server sent the supported command");
+
+                    onSupported(recievedWords);
 
                 default:
                     System.out.println(response);
@@ -510,5 +518,9 @@ public class TCPClient {
      */
     private void onSupported(String[] commands) {
         // TODO Step 8: Implement this method
+
+        for (ChatListener l : listeners){
+            l.onSupportedCommands(commands);
+        }
     }
 }
