@@ -274,7 +274,7 @@ public class TCPClient {
 
             //Switch case calls on method to display an error message if username is already taken
             //Or if no answer is recieved from the server after trying to log in
-
+/*
             //Create a string from the response from server
             String switchString = waitServerResponse();
             //String userListString = switchString;
@@ -286,38 +286,89 @@ public class TCPClient {
             stringToSplit = stringToSplit.replaceFirst("users ", "");
 
             //Create the array that contains all the users
-            String[] tempArray;
+            String[] tempArrayUserList;
 
             //Declare the symbol that means the string should be split
             String delimiter = " ";
 
             // given string will be split by the argument delimiter provided.
-            tempArray = stringToSplit.split(delimiter);
+            tempArrayUserList = stringToSplit.split(delimiter);
 
 
 
             if (switchString.contains("users")){
                 switchString = "users ";
             }
-            switch (switchString){
+            if (tempArrayUserList[0] == "msg"){
+                switchString = "msg";
+            }
+*/
+            String sender;
+
+            String response = waitServerResponse();
+
+            String[] recievedWords;
+
+            recievedWords = response.split(" ");
+
+            switch (recievedWords[0]){
                 case "loginok":
                     onLoginResult(true, "");
                     System.out.println("Server responded with loginok");
                     break;
-                case "loginerr username already in use":
-                    onLoginResult(false, "Username already in use");
-                    System.out.println("Username already in use");
-                    break;
-                case "loginerr incorrect username format":
-                    onLoginResult(false, "No special symbols (includes space)");
-                    System.out.println("Username must not contain special symbols");
-                    break;
-                case  "users ":
-                    //System.out.println(userListString);
-                    onUsersList(tempArray);
-                    for (int i = 0; i < tempArray.length; i++){
-                        System.out.println(tempArray[i]);
+                case "loginerr":
+
+                    if (recievedWords[1].equals("username")){
+                        onLoginResult(false, "Username already in use");
+                        System.out.println("Username already in use");
                     }
+
+                    else if (recievedWords[1].equals("incorrect")){
+                        onLoginResult(false, "No special symbols (includes space)");
+                        System.out.println("Username must not contain special symbols");
+                    }
+                    break;
+                case "users":
+                    //System.out.println(userListString);
+
+                    String forRemoveCommand = response.replaceFirst("users ", "");
+                    String[] userList = forRemoveCommand.split(" ");
+
+                    onUsersList(userList);
+                    for (int i = 0; i < recievedWords.length; i++){
+                        System.out.println(recievedWords[i]);
+                    }
+                    break;
+                case "msg":
+                    System.out.println("recieved message command from server");
+
+                    sender = recievedWords[1];
+                    String message = response.replaceFirst("msg ", "");
+                    message = message.replaceFirst(sender, "");
+                    onMsgReceived(false,sender ,message);
+                    break;
+                case "privmsg":
+                    System.out.println("recieved private message command from server");
+
+                    sender = recievedWords[1];
+                    String privateMessage = response.replaceFirst("privmsg", "");
+                    privateMessage = privateMessage.replaceFirst(sender, "");
+                    onMsgReceived(true, sender, privateMessage);
+
+                    break;
+                case "msgerr":
+                    System.out.println("there was an error in sending the last message from client");
+
+                    onMsgError(response);
+                    break;
+                case "cmderr":
+                    System.out.println("The server did not understaand the command");
+
+                    onCmdError(response);
+                    break;
+
+                default:
+                    System.out.println(response);
 
 
             }
@@ -416,6 +467,12 @@ public class TCPClient {
      */
     private void onMsgReceived(boolean priv, String sender, String text) {
         // TODO Step 7: Implement this method
+
+        TextMessage message = new TextMessage(sender, priv, text);
+        for (ChatListener l : listeners){
+
+            l.onMessageReceived(message);
+        }
     }
 
     /**
@@ -425,6 +482,11 @@ public class TCPClient {
      */
     private void onMsgError(String errMsg) {
         // TODO Step 7: Implement this method
+
+
+        for (ChatListener l : listeners){
+            l.onMessageError(errMsg);
+        }
     }
 
     /**
@@ -434,6 +496,10 @@ public class TCPClient {
      */
     private void onCmdError(String errMsg) {
         // TODO Step 7: Implement this method
+
+        for (ChatListener l : listeners){
+            l.onCommandError(errMsg);
+        }
     }
 
     /**
