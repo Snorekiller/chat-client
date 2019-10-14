@@ -60,8 +60,6 @@ public class TCPClient {
      * that no two threads call this method in parallel.
      */
     public synchronized void disconnect() {
-        // TODO Step 4: implement this method
-        // Hint: remember to check if connection is active
 
         //checks if connection is active and closes + sets socket to null to avoid that methods tries to call on the closed socket
         if(isConnectionActive()) {
@@ -78,7 +76,7 @@ public class TCPClient {
     }
 
 
-    //Beneftits from socket being set to null on disconnect cause it will be true even if socket is closed, but not if it is null
+    //Benefits from socket being set to null on disconnect cause it will be true even if socket is closed, but not if it is null
     /**
      * @return true if the connection is active (opened), false if not.
      */
@@ -107,9 +105,6 @@ public class TCPClient {
             return false;
         }
 
-
-        // Hint: Remember to check if connection is active
-
     }
 
     /**
@@ -132,9 +127,6 @@ public class TCPClient {
             return false;
         }
 
-        // Hint: Reuse sendCommand() method
-        // Hint: update lastError if you want to store the reason for the error.
-
     }
 
     /**
@@ -154,7 +146,6 @@ public class TCPClient {
             System.out.println("Username was not sent to server");
         }
 
-        // Hint: Reuse sendCommand() method
     }
 
     /**
@@ -162,7 +153,6 @@ public class TCPClient {
      * clear your current user list and use events in the listener.
      */
     public void refreshUserList() {
-        // TODO Step 5: implement this method
 
         // Sends the command "users" to the sendCommand method
         if(sendCommand("users")){
@@ -171,10 +161,6 @@ public class TCPClient {
             System.out.println("Asked server for user list");
         }
 
-//            toServer.println("users ");
-
-        // Hint: Use Wireshark and the provided chat client reference app to find out what commands the
-        // client and server exchange for user listing.
     }
 
     /**
@@ -194,8 +180,7 @@ public class TCPClient {
         }
 
         System.out.println("Could not send a PM");
-        // Hint: Reuse sendCommand() method
-        // Hint: update lastError if you want to store the reason for the error.
+
         return false;
     }
 
@@ -204,12 +189,11 @@ public class TCPClient {
      * Send a request for the list of commands that server supports.
      */
     public void askSupportedCommands() {
-        // TODO Step 8: Implement this method
+
         if(sendCommand("help ")){
             toServer.println("");
         }
 
-        // Hint: Reuse sendCommand() method
     }
 
 
@@ -219,7 +203,6 @@ public class TCPClient {
      * @return one line of text (one command) received from the server
      */
     private String waitServerResponse() {
-        // TODO Step 3: Implement this method
 
             String answer = "error";
 
@@ -230,8 +213,6 @@ public class TCPClient {
                 return answer;
             } catch (IOException e) {
                 System.out.println(e.getMessage());
-                //e.printStackTrace();
-                //disconnect();
 
 
                 return "";
@@ -272,41 +253,8 @@ public class TCPClient {
      * the connection is closed.
      */
     private void parseIncomingCommands() {
-        //while (!connection.isClosed()) {
         while (isConnectionActive()) {
-            // TODO Step 3: Implement this method
 
-            //Switch case calls on method to display an error message if username is already taken
-            //Or if no answer is recieved from the server after trying to log in
-/*
-            //Create a string from the response from server
-            String switchString = waitServerResponse();
-            //String userListString = switchString;
-
-            //Create a string to split up in order to make an array
-            String stringToSplit = switchString;
-
-            //replace the first word with an empty string, this is so that "users" will not appear as a user
-            stringToSplit = stringToSplit.replaceFirst("users ", "");
-
-            //Create the array that contains all the users
-            String[] tempArrayUserList;
-
-            //Declare the symbol that means the string should be split
-            String delimiter = " ";
-
-            // given string will be split by the argument delimiter provided.
-            tempArrayUserList = stringToSplit.split(delimiter);
-
-
-
-            if (switchString.contains("users")){
-                switchString = "users ";
-            }
-            if (tempArrayUserList[0] == "msg"){
-                switchString = "msg";
-            }
-*/
             String sender;
 
             String response = waitServerResponse();
@@ -333,7 +281,6 @@ public class TCPClient {
                     }
                     break;
                 case "users":
-                    //System.out.println(userListString);
 
                     String forRemoveCommand = response.replaceFirst("users ", "");
                     String[] userList = forRemoveCommand.split(" ");
@@ -380,22 +327,6 @@ public class TCPClient {
 
 
             }
-
-            // Hint: Reuse waitServerResponse() method
-            // Hint: Have a switch-case (or other way) to check what type of response is received from the server
-            // and act on it.
-            // Hint: In Step 3 you need to handle only login-related responses.
-            // Hint: In Step 3 reuse onLoginResult() method
-
-            // TODO Step 5: update this method, handle user-list response from the server
-            // Hint: In Step 5 reuse onUserList() method
-
-            // TODO Step 7: add support for incoming chat messages from other users (types: msg, privmsg)
-            // TODO Step 7: add support for incoming message errors (type: msgerr)
-            // TODO Step 7: add support for incoming command errors (type: cmderr)
-            // Hint for Step 7: call corresponding onXXX() methods which will notify all the listeners
-
-            // TODO Step 8: add support for incoming supported command list (type: supported)
 
         }
     }
@@ -444,13 +375,10 @@ public class TCPClient {
      * Internet error)
      */
     private void onDisconnect() {
-        // TODO Step 4: Implement this method
 
         for (ChatListener l : listeners) {
             l.onDisconnect();
         }
-
-        // Hint: all the onXXX() methods will be similar to onLoginResult()
     }
 
     /**
@@ -459,7 +387,6 @@ public class TCPClient {
      * @param users List with usernames
      */
     private void onUsersList(String[] users) {
-        // TODO Step 5: Implement this method
 
         for (ChatListener l : listeners){
             l.onUserList(users);
@@ -474,7 +401,6 @@ public class TCPClient {
      * @param text   Message text
      */
     private void onMsgReceived(boolean priv, String sender, String text) {
-        // TODO Step 7: Implement this method
 
         TextMessage message = new TextMessage(sender, priv, text);
         for (ChatListener l : listeners){
@@ -489,7 +415,6 @@ public class TCPClient {
      * @param errMsg Error description returned by the server
      */
     private void onMsgError(String errMsg) {
-        // TODO Step 7: Implement this method
 
 
         for (ChatListener l : listeners){
@@ -503,7 +428,6 @@ public class TCPClient {
      * @param errMsg Error message
      */
     private void onCmdError(String errMsg) {
-        // TODO Step 7: Implement this method
 
         for (ChatListener l : listeners){
             l.onCommandError(errMsg);
@@ -517,7 +441,6 @@ public class TCPClient {
      * @param commands Commands supported by the server
      */
     private void onSupported(String[] commands) {
-        // TODO Step 8: Implement this method
 
         for (ChatListener l : listeners){
             l.onSupportedCommands(commands);
