@@ -15,7 +15,7 @@ public class TCPClient {
     private final static String PUBLICMESSAGECMD = "msg ";
     private final static String LOGINCMD = "login ";
     private final static String PRIVATEMSGCMD = "privmsg ";
-    private final static String USERSCMD = "users ";
+    private final static String USERSCMD = "users";
     private final static String HELPCMD = "help";
     private String[] usersList = null;
     private String response = null;
@@ -62,7 +62,8 @@ public class TCPClient {
     public synchronized void disconnect() {
         // TODO Step 4: implement this method
         // Hint: remember to check if connection is active
-        try {
+        if (isConnectionActive()) {
+            try {
             //terminates the connection between the host socket and the local socket
             connection.close();
             // sets connection == null so when we test isConnectionActive, it will return null
@@ -72,8 +73,6 @@ public class TCPClient {
             e.printStackTrace();
         }
         //tests if connection == null to check if connection.close() was successful, if unsuccessful it will try again.
-        if (isConnectionActive()) {
-            disconnect();
         }
     }
 
@@ -253,8 +252,12 @@ public class TCPClient {
                         break;
 
                     case "loginerr":
-                        onLoginResult(false, lastError);
-                        System.out.println("login unsuccessful");
+                        if (parts[1].equals("username")){
+                            onLoginResult(false, "username is already in use");
+                        } else if (parts[1].equals("incorrect")){
+                            onLoginResult(false, "No special symbols allowed(including space)");
+                        }
+
                         break;
 
                     case "users":
@@ -301,15 +304,10 @@ public class TCPClient {
                         break;
 
                     default:
-
+                        lastError=response;
                         break;
                 }
             }
-
-            // Hint for Step 7: call corresponding onXXX() methods which will notify all the listeners
-
-            // TODO Step 8: add support for incoming supported command list (type: supported)
-
         }
     }
 
